@@ -5,19 +5,20 @@ import logging #Блять что это????????????????????????????????????????
 import aiomysql
 
 from aiogram.fsm.storage.redis import RedisStorage
+from core.handlers.basic import get_start
 # from apscheduler.jobstores.redis import RedisJobStore
 # from apscheduler_di import ContextSchedulerDecorator
 
-from core.handlers.basic import get_description, get_location_find, get_location_loss, get_photo_find, get_photo_loss, get_start, get_hello, get_inline
-from core.handlers.callback import select_animal_find, select_macbook, select_find, select_loss, select_animal_loss
-from core.filters.iscontact import IsTrueContact
-from core.handlers.contact import get_fake_contact, get_true_contact_find, get_true_contact_loss
-from core.keyboards.reply import get_reply_empty
+#from core.handlers.basic import get_description, get_location_find, get_location_loss, get_photo_find, get_photo_loss, get_start, get_hello, get_inline
+from core.handlers.callback import select_buttons, select_text
+# from core.filters.iscontact import IsTrueContact
+# from core.handlers.contact import get_fake_contact, get_true_contact_find, get_true_contact_loss
+# from core.keyboards.reply import get_reply_empty
 from core.settings import Setting
 from aiogram.filters import Command, CommandStart, callback_data
 from aiogram import F
 from core.utils.commands import set_commands
-from core.utils.callbackdata import InlineInfo, MacInfo
+from core.utils.callbackdata import InlineInfo
 from core.handlers.pay import order, pre_checkout_query, successful_payment, shipping_check
 from core.middlewares.countermiddleware import CounterMiddleware
 from core.middlewares.officehours import OfficeHoursMiddleware
@@ -26,7 +27,7 @@ from core.middlewares.dbmiddleware import DBSession
 from aiogram.utils.chat_action import ChatActionMiddleware
 
 from core.handlers import form
-from core.utils.statesform import FindSteps, LossSteps, StepsForm
+from core.utils.statesform import TextSteps
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from core.handlers import apsched
 from datetime import datetime, timedelta
@@ -35,7 +36,7 @@ from datetime import datetime, timedelta
 async def start_bot(bot: Bot):
     await set_commands(bot)
     await bot.send_message(Setting.bots.admin_id,
-                           f"Bot has been launched at {datetime.now()}", reply_markup=get_reply_empty())
+                           f"Bot has been launched at {datetime.now()}")
     print('Bot has been launched')
 
 async def stop_bot(bot: Bot):
@@ -94,19 +95,23 @@ async def start():
     # dp.message.register(successful_payment, F.successful_payment)
     # dp.shipping_query.register(shipping_check)
 
-    dp.message.register(get_start, Command(commands=['start', 'run']))  # CommandStart()
-    dp.callback_query.register(select_loss, InlineInfo.filter(F.type == "loss"))
-    dp.callback_query.register(select_find, InlineInfo.filter(F.type == "find"))
-    dp.callback_query.register(select_animal_loss, InlineInfo.filter(), LossSteps.GET_ANIMAL)
-    dp.callback_query.register(select_animal_find, InlineInfo.filter(), FindSteps.GET_ANIMAL)
+    dp.message.register(get_start, Command(commands='start'))  # CommandStart()
     
-    dp.message.register(get_location_loss, F.location, LossSteps.GET_LOCATION_CONTACT)
-    dp.message.register(get_location_find, F.location, FindSteps.GET_LOCATION_CONTACT)
-    dp.message.register(get_true_contact_loss, F.contact, IsTrueContact(), LossSteps.GET_LOCATION_CONTACT)
-    dp.message.register(get_true_contact_find, F.contact, IsTrueContact(), FindSteps.GET_LOCATION_CONTACT)
-    dp.message.register(get_description, LossSteps.GET_DESCRIPTION)
-    dp.message.register(get_photo_loss, F.photo, LossSteps.GET_PHOTO)
-    dp.message.register(get_photo_find, F.photo, FindSteps.GET_PHOTO)
+
+    dp.callback_query.register(select_text, F.data.contains("text"))
+    dp.callback_query.register(select_buttons, F.data.contains("buttons"))
+
+    # dp.callback_query.register(select_find, InlineInfo.filter(F.type == "find"))
+    # dp.callback_query.register(select_animal_loss, InlineInfo.filter(), LossSteps.GET_ANIMAL)
+    # dp.callback_query.register(select_animal_find, InlineInfo.filter(), FindSteps.GET_ANIMAL)
+    
+    # dp.message.register(get_location_loss, F.location, LossSteps.GET_LOCATION_CONTACT)
+    # dp.message.register(get_location_find, F.location, FindSteps.GET_LOCATION_CONTACT)
+    # dp.message.register(get_true_contact_loss, F.contact, IsTrueContact(), LossSteps.GET_LOCATION_CONTACT)
+    # dp.message.register(get_true_contact_find, F.contact, IsTrueContact(), FindSteps.GET_LOCATION_CONTACT)
+    # dp.message.register(get_description, LossSteps.GET_DESCRIPTION)
+    # dp.message.register(get_photo_loss, F.photo, LossSteps.GET_PHOTO)
+    # dp.message.register(get_photo_find, F.photo, FindSteps.GET_PHOTO)
 
     # dp.callback_query.register(select_macbook, F.data.startswith('inline_'))
     # dp.callback_query.register(select_macbook, MacInfo.filter())
@@ -115,7 +120,7 @@ async def start():
     # dp.message.register(get_inline, Command(commands='inline'))
     # dp.message.register(get_hello, F.text == 'Привет')
     
-    dp.message.register(get_fake_contact, F.contact)
+    # dp.message.register(get_fake_contact, F.contact)
     
     
     dp.startup.register(start_bot)
