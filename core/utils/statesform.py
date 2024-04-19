@@ -8,7 +8,10 @@ class StepsForm(StatesGroup):
 class TextSteps(StatesGroup):
     GET_TEXT = State()
     IS_CORRECT = State()
-    RETURN_PREDICT = State()
 
+
+class ButtonsSteps(StatesGroup):
+    CHOOSING_BRANCH = State()
+    CHOOSING_STATION = State()
 
 

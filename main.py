@@ -5,12 +5,12 @@ import logging #Блять что это????????????????????????????????????????
 import aiomysql
 
 from aiogram.fsm.storage.redis import RedisStorage
-from core.handlers.basic import get_start
+from core.handlers.basic import get_start, get_text
 # from apscheduler.jobstores.redis import RedisJobStore
 # from apscheduler_di import ContextSchedulerDecorator
 
 #from core.handlers.basic import get_description, get_location_find, get_location_loss, get_photo_find, get_photo_loss, get_start, get_hello, get_inline
-from core.handlers.callback import select_buttons, select_text
+from core.handlers.callback import predict, select_buttons, select_check, select_station, select_text
 # from core.filters.iscontact import IsTrueContact
 # from core.handlers.contact import get_fake_contact, get_true_contact_find, get_true_contact_loss
 # from core.keyboards.reply import get_reply_empty
@@ -44,15 +44,15 @@ async def stop_bot(bot: Bot):
                            f"Bot has been stopped at {datetime.now()}")
     print("Bot has been stopped")
 
-async def create_pool():
-    return await aiomysql.create_pool(
-        host = 'localhost', 
-        port = 3306, 
-        user='root',
-        password='Basek@319_',
-        db='research_bot',
-        autocommit=True,
-        )
+# async def create_pool():
+#     return await aiomysql.create_pool(
+#         host = 'localhost', 
+#         port = 3306, 
+#         user='root',
+#         password='',
+#         db='',
+#         autocommit=True,
+#         )
 
 async def start():
     logging.basicConfig(level=logging.INFO,
@@ -61,7 +61,7 @@ async def start():
 
     bot = Bot(token=Setting.bots.bot_token, parse_mode='HTML')
 
-    pool_connect = await create_pool()
+    #pool_connect = await create_pool()
 
     storage = RedisStorage.from_url('redis://localhost:6379/0')
 
@@ -87,8 +87,10 @@ async def start():
     # dp.update.middleware.register(OfficeHoursMiddleware())
     # dp.update.middleware.register(SchedulerMiddleware(scheduler))
 
-    dp.update.middleware.register(DBSession(pool_connect))
+
+    # dp.update.middleware.register(DBSession(pool_connect))
     dp.message.middleware.register(ChatActionMiddleware())
+
 
     # dp.message.register(order, Command(commands='pay'))
     # dp.pre_checkout_query.register(pre_checkout_query)
@@ -96,10 +98,24 @@ async def start():
     # dp.shipping_query.register(shipping_check)
 
     dp.message.register(get_start, Command(commands='start'))  # CommandStart()
-    
+    dp.message.register(select_text, Command(commands='text'))
+    dp.message.register(select_buttons, Command(commands='buttons'))
 
     dp.callback_query.register(select_text, F.data.contains("text"))
     dp.callback_query.register(select_buttons, F.data.contains("buttons"))
+
+    dp.message.register(get_text, TextSteps.GET_TEXT)
+    dp.callback_query.register(select_check, TextSteps.IS_CORRECT)
+    
+    dp.callback_query.register(select_buttons, F.data.contains("branch_<"))
+    dp.callback_query.register(select_buttons, F.data.contains("branch_>"))
+
+    dp.callback_query.register(select_station, F.data.startswith("branch_"))
+    dp.callback_query.register(select_station, F.data.contains("station_<"))
+    dp.callback_query.register(select_station, F.data.contains("station_>"))
+    
+    dp.callback_query.register(predict, F.data.startswith("station_"))
+    
 
     # dp.callback_query.register(select_find, InlineInfo.filter(F.type == "find"))
     # dp.callback_query.register(select_animal_loss, InlineInfo.filter(), LossSteps.GET_ANIMAL)
