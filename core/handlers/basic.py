@@ -49,10 +49,17 @@ async def get_document(message: Message, bot: Bot):
     file_type = message.document.file_name.split(".")[1]
     
     if (file_type == "csv" or file_type == "xslx"):
-        await message.answer(f'Отлично, ты отправил докумет! Я добавлю его в данные')
+        await message.answer(f'Отлично, ты отправил докумет! Я добавлю его в данные.')
         await bot.download_file(file.file_path, 'doc' + str(file.file_id) + "." + file_type)
     else:
         await message.answer(f"Бот принимает данные для обновления только в форматах .csv и .xslx")
+        
+async def get_voice(message: Message, bot: Bot):
+    file_id = message.voice.file_id
+    file = await bot.get_file(file_id)
+    file_path = file.file_path
+    await bot.download_file(file_path, "voice" + str(file_id) +".mp3")
+    await message.answer("Я принял твой голосовой запрос! Сейчас обработаю его.")
 
     
 
