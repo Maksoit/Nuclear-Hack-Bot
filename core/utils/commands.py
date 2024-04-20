@@ -6,6 +6,7 @@ async def set_commands(bot: Bot):
         BotCommand(command='start', description='Запустить бота'),
         BotCommand(command='text', description='Ввести запрос в свободной форме'),
         BotCommand(command='buttons', description='Воспользоваться кнопками для выбора станции'),
+        BotCommand(command='fail', description='Ввести файл'),
         BotCommand(command='help', description='Помощь и описание'),
         BotCommand(command='cancel', description='Сбросить')
     ]

@@ -5,7 +5,7 @@ import logging #Блять что это????????????????????????????????????????
 import aiomysql
 
 from aiogram.fsm.storage.redis import RedisStorage
-from core.handlers.basic import get_start, get_text
+from core.handlers.basic import get_document, get_start, get_text, select_buttons_command, select_text_command
 # from apscheduler.jobstores.redis import RedisJobStore
 # from apscheduler_di import ContextSchedulerDecorator
 
@@ -98,8 +98,8 @@ async def start():
     # dp.shipping_query.register(shipping_check)
 
     dp.message.register(get_start, Command(commands='start'))  # CommandStart()
-    dp.message.register(select_text, Command(commands='text'))
-    dp.message.register(select_buttons, Command(commands='buttons'))
+    dp.message.register(select_text_command, Command(commands='text'))
+    dp.message.register(select_buttons_command, Command(commands='buttons'))
 
     dp.callback_query.register(select_text, F.data.contains("text"))
     dp.callback_query.register(select_buttons, F.data.contains("buttons"))
@@ -116,6 +116,8 @@ async def start():
     
     dp.callback_query.register(predict, F.data.startswith("station_"))
     
+    dp.message.register(get_document, F.document)
+
 
     # dp.callback_query.register(select_find, InlineInfo.filter(F.type == "find"))
     # dp.callback_query.register(select_animal_loss, InlineInfo.filter(), LossSteps.GET_ANIMAL)
